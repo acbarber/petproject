@@ -1,0 +1,71 @@
+{% extends "base_menu.html" %}
+{% block content %}
+<h1>Socials</h1>
+<p>
+{% if social_list %}
+<ul>
+  {% for social in social_list %}
+    <li>
+        <a href="{% url 'social_detail'  social.id %}">{{ social.title }}</a>
+        {% if social.owner == user %}
+        (<a href="{% url 'social_update' social.id %}">Edit</a> |
+        <a href="{% url 'social_delete' social.id %}">Delete</a>)
+        {% endif %}
+        {% if user.is_authenticated %}
+        <a href="#" onclick=
+            "favPost('{% url 'social_unfavorite' social.id %}', {{ social.id }} );return false;"
+            {% if social.id not in favorites %} style="display: none;" {% endif %}
+            id="favorite_star_{{social.id}}">
+        <span class="fa-stack" style="vertical-align: middle;">
+        <i class="fa fa-star fa-stack-1x" style="color: orange;"></i>
+        <i class="fa fa-star-o fa-stack-1x"></i>
+        </span>
+        </a>
+        <!-- Weird - fa-stack changes vertical spacing so to be consistent we use it here -->
+        <a href="#" onclick=
+             "favPost('{% url 'social_favorite' social.id %}', {{ social.id }} );return false;"
+            {% if social.id in favorites %} style="display: none;" {% endif %}
+            id="unfavorite_star_{{social.id}}">
+        <span class="fa-stack" style="vertical-align: middle;">
+        <i class="fa fa-star fa-stack-1x" style="display: none; color: orange;"></i>
+        <i class="fa fa-star-o fa-stack-1x"></i>
+        </span>
+        </a>
+        {% endif %}
+    </li>
+  {% endfor %}
+</ul>
+{% else %}
+  <p>There are no posts in the database.</p>
+{% endif %}
+</p>
+<p>
+<a href="{% url 'social_create' %}">Add a post</a> |
+{% if user.is_authenticated %}
+<a href="{% url 'logout' %}?next={% url 'socials' %}">Logout</a>
+{% else %}
+<a href="{% url 'login' %}?next={% url 'socials' %}">Login</a>
+{% endif %}
+</p>
+<script>
+function favPost(url, social_id) {
+    fetch(url, {
+        method: "POST", // *GET, POST, PUT, DELETE, etc.
+        mode: "cors", // no-cors, cors, *same-origin
+        cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+        credentials: "same-origin", // include, *same-origin, omit
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+        },
+        redirect: "follow", // manual, *follow, error
+        referrer: "no-referrer", // no-referrer, *client
+    }).then(function(data) {
+        console.log(url, 'finished');
+        $("#unfavorite_star_"+social_id).toggle();
+        $("#favorite_star_"+social_id).toggle();
+    }).catch(function() {
+        console.log(url, 'error');
+    })
+}
+</script>
+{% endblock %}
